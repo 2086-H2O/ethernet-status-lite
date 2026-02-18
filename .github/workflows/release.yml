@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate version
+        id: version
+        run: |
+          DATE=$(date -u +%Y.%m.%d)
+          # Check if a release already exists for today, if so bump suffix
+          EXISTING=$(git tag -l "${DATE}.*" | sort -V | tail -1)
+          if [ -z "$EXISTING" ]; then
+            VERSION="${DATE}"
+          else
+            SUFFIX=$(echo "$EXISTING" | grep -oE '\.[0-9]+$' | tr -d '.')
+            NEXT=$((SUFFIX + 1))
+            VERSION="${DATE}.${NEXT}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Create app bundle
+        run: |
+          APP_DIR="Ethernet Status.app/Contents/MacOS"
+          RES_DIR="Ethernet Status.app/Contents/Resources"
+          mkdir -p "$APP_DIR" "$RES_DIR"
+          cp .build/release/EthernetStatus "$APP_DIR/EthernetStatus"
+          cp Info.plist "Ethernet Status.app/Contents/Info.plist"
+          cp Resources/*.png "$RES_DIR/"
+          if [ -f Resources/AppIcon.icns ]; then
+            cp Resources/AppIcon.icns "$RES_DIR/"
+          fi
+
+          # Set version in Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.version }}" "Ethernet Status.app/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.version }}" "Ethernet Status.app/Contents/Info.plist"
+
+          # Ad-hoc sign for SMAppService (launch at login)
+          codesign --force --sign - "Ethernet Status.app"
+
+      - name: Create DMG
+        run: |
+          mkdir -p dmg
+          cp -r "Ethernet Status.app" dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname "Ethernet Status" -srcfolder dmg -ov -format UDZO "EthernetStatus.dmg"
+          rm -rf dmg
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            EthernetStatus.dmg \
+            --title "Ethernet Status ${{ steps.version.outputs.version }}" \
+            --generate-notes
