@@ -1,20 +1,20 @@
 # Ethernet Status
 
-A lightweight macOS menubar app that shows your active network connection type. Designed to replace the system Wi-Fi icon (hidden via [Ice](https://github.com/jordanbaird/Ice) or similar) with a single icon that reflects what you're actually using.
+A lightweight macOS menubar app that replaces the native Wi-Fi menubar icon. Shows a single icon that reflects your actual connection type — Wi-Fi, Ethernet, or disconnected — with a dropdown showing connection details, live throughput graph, and nearby networks.
 
-| State         | Icon                                          |
-| ------------- | --------------------------------------------- |
-| Wi-Fi         | `wifi` / `wifi.exclamationmark` (weak signal) |
-| Ethernet      | `link`                                        |
-| No connection | `wifi.slash`                                  |
+To hide the native Wi-Fi icon, use [Ice](https://github.com/jordanbaird/Ice) or a similar menubar manager.
 
-<!-- ![menubar screenshot](screenshot.png) -->
+## Features
 
-Click the icon to see connection details: interface name, IP address, Wi-Fi SSID & signal strength, or ethernet link speed.
+- Adaptive menubar icon (Wi-Fi / Ethernet / disconnected)
+- Live download/upload speed graph
+- Nearby Wi-Fi networks with signal strength, band, and security info
+- One-click connect/disconnect
+- Launch at Login
 
 ## Install
 
-Download `EthernetStatus.zip` from the [latest release](../../releases/latest), unzip, and move `Ethernet Status.app` to `/Applications`.
+Download `EthernetStatus.dmg` from the [latest release](../../releases/latest), open it, and drag **Ethernet Status** to **Applications**.
 
 Since the app is not notarized, macOS will block it on first launch. Remove the quarantine attribute:
 
@@ -23,8 +23,6 @@ xattr -d com.apple.quarantine "/Applications/Ethernet Status.app"
 ```
 
 Then open the app. It runs in the menubar only (no dock icon).
-
-To start at login, add it in **System Settings > General > Login Items**.
 
 ## Build from source
 
