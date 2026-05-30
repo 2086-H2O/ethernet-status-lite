@@ -110,7 +110,7 @@ struct MenuBarIcon: View {
         guard let url = Bundle.main.url(forResource: "EthernetApple", withExtension: "png"),
               let img = NSImage(contentsOf: url) else { return nil }
         img.isTemplate = true
-        img.size = NSSize(width: 25, height: 14)
+        img.size = NSSize(width: 23, height: 13)
         return img
     }
 
@@ -218,12 +218,34 @@ struct PopoverContent: View {
 
     // MARK: - Connection Card
 
-    private var badgeIcon: String {
+    private func ethernetBadgeImage() -> NSImage? {
+        let style = UserDefaults.standard.ethernetIconStyle
+        let name = style == .appleNative ? "EthernetApple" : "IconTemplate@2x"
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
+              let img = NSImage(contentsOf: url) else { return nil }
+        img.isTemplate = true
+        img.size = style == .appleNative
+            ? NSSize(width: 19, height: 11)
+            : NSSize(width: 14, height: 14)
+        return img
+    }
+
+    @ViewBuilder
+    private var badgeImage: some View {
+        if monitor.state.connectionType == .ethernet,
+           let img = ethernetBadgeImage() {
+            Image(nsImage: img)
+        } else {
+            Image(systemName: badgeSymbolName)
+                .font(.system(size: 13, weight: .semibold))
+        }
+    }
+
+    private var badgeSymbolName: String {
         switch monitor.state.connectionType {
         case .wifi: return "wifi"
-        case .ethernet: return "link"
         case .other: return "network"
-        case .none: return "wifi.slash"
+        default: return "wifi.slash"
         }
     }
 
@@ -241,10 +263,9 @@ struct PopoverContent: View {
                             Circle()
                                 .fill(Color(nsColor: .controlAccentColor))
                                 .frame(width: 28, height: 28)
-                            Image(systemName: badgeIcon)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.white)
+                            badgeImage
                         }
+                        .foregroundStyle(.white)
                     }
                     .buttonStyle(.plain)
                     .help(monitor.state.connectionType == .wifi ? "Disconnect" : "")
