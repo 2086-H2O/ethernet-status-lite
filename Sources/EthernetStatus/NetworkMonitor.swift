@@ -96,6 +96,7 @@ struct NetworkState: Equatable {
     var graphScaleMbps: Double = 10
     var downloadMbps: Double = 0
     var uploadMbps: Double = 0
+    var isPersonalHotspot: Bool = false
 }
 
 struct WiFiNetwork: Identifiable, Equatable, Hashable {
@@ -389,6 +390,8 @@ final class NetworkMonitor: ObservableObject {
             newState.interfaceName = ifName
             newState.ipAddress = ipAddress(for: ifName)
             newState.ethernetSpeed = ethernetMediaSpeed(for: ifName)
+        } else if !wifiPowered {
+            newState.connectionType = .none
         } else if path.usesInterfaceType(.wifi) {
             let ifName = activeInterfaceName(for: .wifi, path: path)
             newState.connectionType = .wifi
@@ -399,11 +402,15 @@ final class NetworkMonitor: ObservableObject {
             if let ch = iface?.wlanChannel()?.channelNumber {
                 newState.wifiBand = Band(channel: ch)
             }
-            // Detect current network security from scan results
+            // Detect security type and hotspot from current network
             if let ssid = newState.wifiSSID,
                let cached = iface?.cachedScanResults(),
                let net = cached.first(where: { $0.ssid == ssid }) {
                 newState.wifiSecurity = SecurityType(from: net)
+                newState.isPersonalHotspot = net.value(forKey: "isPersonalHotspot") as? Bool ?? false
+            }
+            if !newState.isPersonalHotspot {
+                newState.isPersonalHotspot = path.isExpensive
             }
         } else {
             newState.connectionType = .other

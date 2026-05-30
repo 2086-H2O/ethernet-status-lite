@@ -82,11 +82,19 @@ struct MenuBarIcon: View {
                 }
             }
         case .wifi:
-            Image(nsImage: sfSymbol(wifiIconName(rssi: state.wifiSignalStrength)))
+            if state.isPersonalHotspot {
+                Image(nsImage: sfSymbol("personalhotspot"))
+            } else {
+                Image(nsImage: sfSymbol(wifiIconName(rssi: state.wifiSignalStrength)))
+            }
         case .other:
-            Image(nsImage: sfSymbol("network"))
+            Image(nsImage: sfSymbol("wifi.exclamationmark"))
         case .none:
-            Image(nsImage: sfSymbol("wifi.slash"))
+            if state.isWiFiPoweredOn {
+                Image(nsImage: sfSymbol("wifi.exclamationmark"))
+            } else {
+                Image(nsImage: sfSymbol("wifi.slash"))
+            }
         }
     }
 
@@ -243,7 +251,7 @@ struct PopoverContent: View {
 
     private var badgeSymbolName: String {
         switch monitor.state.connectionType {
-        case .wifi: return "wifi"
+        case .wifi: return monitor.state.isPersonalHotspot ? "personalhotspot" : "wifi"
         case .other: return "network"
         default: return "wifi.slash"
         }
@@ -326,12 +334,18 @@ struct PopoverContent: View {
         switch monitor.state.connectionType {
         case .wifi:
             HStack(spacing: 4) {
-                if let band = monitor.state.wifiBand {
-                    Text(band.rawValue)
-                }
-                if let sec = monitor.state.wifiSecurity {
-                    Text("\u{00B7}")
-                    Text(sec.rawValue)
+                if monitor.state.isPersonalHotspot {
+                    Image(systemName: "personalhotspot")
+                        .font(.system(size: 9))
+                    Text("Personal Hotspot")
+                } else {
+                    if let band = monitor.state.wifiBand {
+                        Text(band.rawValue)
+                    }
+                    if let sec = monitor.state.wifiSecurity {
+                        Text("\u{00B7}")
+                        Text(sec.rawValue)
+                    }
                 }
             }
             .font(.system(size: 10))
