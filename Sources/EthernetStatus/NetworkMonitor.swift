@@ -11,6 +11,18 @@ enum ConnectionType: Equatable {
     case none
 }
 
+enum EthernetIconStyle: String, CaseIterable {
+    case classic        // Original IconTemplate@2x.png
+    case appleNative    // Apple Ethernet icon (EthernetApple.png)
+
+    var displayName: String {
+        switch self {
+        case .classic: return "Classic"
+        case .appleNative: return "Apple"
+        }
+    }
+}
+
 enum SecurityType: String, Equatable {
     case open = "Open"
     case wep = "WEP"
@@ -466,4 +478,28 @@ final class NetworkMonitor: ObservableObject {
         return mediaLine.trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: "media: ", with: "")
     }
+}
+
+// MARK: - Preferences
+
+extension UserDefaults {
+    private static let ethernetIconKey = "EthernetIconStyle"
+
+    var ethernetIconStyle: EthernetIconStyle {
+        get {
+            guard let raw = string(forKey: Self.ethernetIconKey),
+                  let style = EthernetIconStyle(rawValue: raw) else {
+                return .classic
+            }
+            return style
+        }
+        set { set(newValue.rawValue, forKey: Self.ethernetIconKey) }
+    }
+
+    // DEBUG: force simulate ethernet connection for icon testing
+    var debugSimulateEthernet: Bool {
+        get { bool(forKey: "DebugSimulateEthernet") }
+        set { set(newValue, forKey: "DebugSimulateEthernet") }
+    }
+
 }
