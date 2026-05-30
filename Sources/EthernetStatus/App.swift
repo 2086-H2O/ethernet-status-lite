@@ -64,10 +64,22 @@ struct MenuBarIcon: View {
     var body: some View {
         switch state.connectionType {
         case .ethernet:
-            if let img = ethernetImage() {
-                Image(nsImage: img)
-            } else {
-                Image(nsImage: sfSymbol("network"))
+            let style = UserDefaults.standard.ethernetIconStyle
+            switch style {
+            case .appleNative:
+                if let img = appleEthernetImage() {
+                    Image(nsImage: img)
+                } else if let img = ethernetImage() {
+                    Image(nsImage: img)
+                } else {
+                    Image(nsImage: sfSymbol("network"))
+                }
+            case .classic:
+                if let img = ethernetImage() {
+                    Image(nsImage: img)
+                } else {
+                    Image(nsImage: sfSymbol("network"))
+                }
             }
         case .wifi:
             Image(nsImage: sfSymbol(wifiIconName(rssi: state.wifiSignalStrength)))
@@ -91,6 +103,14 @@ struct MenuBarIcon: View {
               let img = NSImage(contentsOf: url) else { return nil }
         img.isTemplate = true
         img.size = NSSize(width: 18, height: 18)
+        return img
+    }
+
+    private func appleEthernetImage() -> NSImage? {
+        guard let url = Bundle.main.url(forResource: "EthernetApple", withExtension: "png"),
+              let img = NSImage(contentsOf: url) else { return nil }
+        img.isTemplate = true
+        img.size = NSSize(width: 25, height: 14)
         return img
     }
 
@@ -471,6 +491,29 @@ struct SettingsView: View {
                     .toggleStyle(.switch)
                     .controlSize(.small)
                     .scaleEffect(1.15)
+                    .labelsHidden()
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+            }
+
+            Divider().opacity(0.2).padding(.horizontal, 8)
+
+            VStack(spacing: 0) {
+                HStack {
+                    Text("Ethernet Icon")
+                        .font(.system(size: 12))
+                    Spacer()
+                    Picker("", selection: Binding(
+                        get: { UserDefaults.standard.ethernetIconStyle },
+                        set: { UserDefaults.standard.ethernetIconStyle = $0 }
+                    )) {
+                        ForEach(EthernetIconStyle.allCases, id: \.self) { style in
+                            Text(style.displayName).tag(style)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 130)
                     .labelsHidden()
                 }
                 .padding(.horizontal, 14)
