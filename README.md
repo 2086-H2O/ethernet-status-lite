@@ -16,11 +16,11 @@ Ethernet Status Lite is a lightweight macOS menu bar app that replaces the nativ
     <tbody>
         <tr>
             <td rowspan="5" style="border: 1px solid #ccc; padding: 10px; background-color: #fafafa;">
-                <img width=100% alt="app settings" src="https://github.com/user-attachments/assets/908d3b05-5152-49c0-9afb-e30cdcfdad17" />
+                <img width=100% alt="app settings" src="https://github.com/user-attachments/assets/22e0ec51-7b12-46dc-9208-8584ec31f113" />
             </td>
             <td style="border: 1px solid #ccc; padding: 10px; width: 100%;">Ethernet</td>
             <td style="border: 1px solid #ccc; padding: 10px; width: 25%;">
-              <img width=100% src="https://github.com/user-attachments/assets/3fe0126f-dfe9-4376-ac80-706bdd61df4e" />
+              <img width=100% src="https://github.com/user-attachments/assets/61443796-b60a-473f-9072-e06c7704be2a" />
             </td>
         </tr>
         <tr>
@@ -52,7 +52,7 @@ Ethernet Status Lite is a lightweight macOS menu bar app that replaces the nativ
 
 We recommend [Ice](https://github.com/jordanbaird/Ice), iBar, or Bartender to hide the native Wi-Fi icon.
 
-> The motivation for Ethernet Status Lite: macOS in recent years still only shows wireless status in the native menu bar network icon, ignoring wired connections entirely. We wanted a Windows-style network status icon that can fully replace the native Wi-Fi menu bar icon.
+> The motivation for Ethernet Status Lite: macOS in recent years still only shows wireless status in the native menu bar network icon, ignoring wired connections entirely. How tf can u stand that?! We wanted a Windows-style network status icon that can fully replace the native Wi-Fi menu bar icon.
 
 ## Features
 
