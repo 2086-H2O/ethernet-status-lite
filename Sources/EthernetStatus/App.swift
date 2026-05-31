@@ -51,9 +51,17 @@ final class WiFiMenuItemFinder {
     }
 
     private func clickViaControlCenter() -> Bool {
-        guard let (ccItem, _) = findControlCenterItem() else {
-            return false
-        }
+        // First attempt
+        if openCCAndClickWiFi() { return true }
+
+        // Retry once — CC sometimes needs a warm-up
+//        let delay = UInt32(UserDefaults.standard.ccClickDelay * 1_000_000)
+//        usleep(delay)
+        return openCCAndClickWiFi()
+    }
+
+    private func openCCAndClickWiFi() -> Bool {
+        guard let (ccItem, _) = findControlCenterItem() else { return false }
         guard axPress(ccItem) else { return false }
         let delay = UInt32(UserDefaults.standard.ccClickDelay * 1_000_000)
         usleep(delay)
@@ -94,8 +102,8 @@ final class WiFiMenuItemFinder {
             AXUIElementCopyAttributeValue(kid, "AXDescription" as CFString, &desc)
             let descStr = (desc as? String) ?? ""
 
-            // Wi-Fi checkbox: desc like "Wi‑Fi：1203" or "Wi‑Fi：On"
-            if (role as? String) == "AXCheckBox", descStr.contains("Wi") && descStr.contains("Fi") {
+            if (role as? String) == "AXCheckBox",
+               descStr.contains(AXSearchTerms.wifi.0) && descStr.contains(AXSearchTerms.wifi.1) {
                 return kid
             }
 
@@ -124,7 +132,7 @@ final class WiFiMenuItemFinder {
             for item in menuItems {
                 var desc: CFTypeRef?
                 AXUIElementCopyAttributeValue(item, "AXDescription" as CFString, &desc)
-                if (desc as? String)?.contains("控制中心") == true {
+                if (desc as? String)?.contains(AXSearchTerms.cc) == true {
                     var posRef: CFTypeRef?
                     var sizeRef: CFTypeRef?
                     AXUIElementCopyAttributeValue(item, "AXPosition" as CFString, &posRef)
@@ -165,7 +173,7 @@ final class WiFiMenuItemFinder {
             for item in menuItems {
                 var desc: CFTypeRef?
                 AXUIElementCopyAttributeValue(item, "AXDescription" as CFString, &desc)
-                guard ((desc as? String) ?? "").contains("Wi") && ((desc as? String) ?? "").contains("Fi") else { continue }
+                guard ((desc as? String) ?? "").contains(AXSearchTerms.wifi.0) && ((desc as? String) ?? "").contains(AXSearchTerms.wifi.1) else { continue }
                 return item
             }
         }
@@ -317,7 +325,12 @@ struct SettingsView: View {
     @AppStorage("EthernetIconStyle") private var iconStyle: EthernetIconStyle = .classic
     @AppStorage("WiFiTriggerPath") private var triggerPath: WiFiTriggerPath = .controlCenter
     @AppStorage("ClickAction") private var clickAction: ClickAction = .leftOpensWiFi
+    @AppStorage("AppLanguage") private var appLanguage: AppLanguage = .english
     @State private var ccDelay: Double = UserDefaults.standard.ccClickDelay
+    @State private var showAdvancedAX: Bool = false
+    @State private var customCC: String = UserDefaults.standard.customCCSearchTerm ?? ""
+    @State private var customWiFi: String = UserDefaults.standard.customWiFiSearchTerm ?? ""
+    @State private var launchAtLoginEnabled: Bool = SMAppService.mainApp.status == .enabled
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -332,13 +345,11 @@ struct SettingsView: View {
                             .foregroundColor(.white)
                     }
                 }
-                Text("Ethernet Icon")
-                    .font(.system(size: 12))
+                Text(Loc.ethernetIcon)
                 Spacer()
                 Picker("", selection: $iconStyle) {
-                    ForEach(EthernetIconStyle.allCases, id: \.self) { s in
-                        Text(s.displayName).tag(s)
-                    }
+                    Text(Loc.classicIcon).tag(EthernetIconStyle.classic)
+                    Text(Loc.appleIcon).tag(EthernetIconStyle.appleNative)
                 }
                 .pickerStyle(.menu)
                 .labelsHidden()
@@ -350,15 +361,16 @@ struct SettingsView: View {
 
             // Wi-Fi Trigger Path
             VStack(alignment: .leading, spacing: 4) {
-                Text("Wi‑Fi Menu Method")
-                    .fontWeight(.bold)
+                Text(Loc.wiFiMenu)
+//                    .fontWeight(.bold)
                 Picker("", selection: $triggerPath) {
-                    ForEach(WiFiTriggerPath.allCases, id: \.self) { p in
-                        Text(p.displayName).tag(p)
-                    }
+                    Text(Loc.controlCenterTrigger).tag(WiFiTriggerPath.controlCenter)
+                    Text(Loc.menuBarTrigger).tag(WiFiTriggerPath.menuBarItem)
+                    Text(Loc.settingsTrigger).tag(WiFiTriggerPath.systemSettings)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
+                .padding(.vertical, 8)
                 Text(triggerDescription)
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
@@ -369,27 +381,28 @@ struct SettingsView: View {
 
             if triggerPath == .controlCenter {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Click delay: \(String(format: "%.0f", ccDelay * 1000)) ms")
+                    Text("\(Loc.clickDelay): \(String(format: "%.0f", ccDelay * 1000)) ms")
                         .font(.system(size: 11))
-                    Slider(value: $ccDelay, in: 0.0...0.5, step: 0.02) { _ in
+                    Slider(value: $ccDelay, in: 0.01...0.5, step: 0.01) { _ in
                         UserDefaults.standard.ccClickDelay = ccDelay
                     }
                 }
                 .padding(.horizontal, 14)
-                .padding(.bottom, 8)
+                .padding(.bottom, 10)
             }
 
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Open Wi‑Fi with")
+                Text(Loc.openWiFiWith)
+//                    .fontWeight(.bold)
                 Picker("", selection: $clickAction) {
-                    ForEach(ClickAction.allCases, id: \.self) { a in
-                        Text(a.displayName).tag(a)
-                    }
+                    Text(Loc.leftClick).tag(ClickAction.leftOpensWiFi)
+                    Text(Loc.rightClick).tag(ClickAction.rightOpensWiFi)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
+                .padding(.top, 8)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
@@ -397,17 +410,71 @@ struct SettingsView: View {
 
             Divider()
 
+            // Language
+            VStack {
+                HStack {
+                    HStack(spacing: 2) {
+                        Text(Loc.language)
+                        // AX Search Settings
+                        Button {
+                            showAdvancedAX.toggle()
+                        } label: {
+                            Image(systemName: "exclamationmark.circle")
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.accentColor)
+                    }
+                    Spacer()
+                    Picker("", selection: $appLanguage) {
+                        ForEach(AppLanguage.allCases, id: \.self) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(width: 130)
+                }
+                
+                
+                if showAdvancedAX {
+                    VStack(alignment: .leading) {
+                        Text(Loc.axSearchDesc)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 8)
+                        Text(Loc.axSearchTerms)
+                            .font(.system(size: 11))
+                        HStack(spacing: 6) {
+                            TextField(Loc.ccSearchField, text: $customCC, prompt: Text(AXSearchTerms.cc).foregroundColor(.secondary))
+                                .textFieldStyle(.roundedBorder)
+                                .font(.system(size: 11))
+                                .onChange(of: customCC) { UserDefaults.standard.customCCSearchTerm = $0.isEmpty ? nil : $0 }
+
+                            TextField(Loc.wifiSearchField, text: $customWiFi, prompt: Text("\(AXSearchTerms.wifi.0) + \(AXSearchTerms.wifi.1)").foregroundColor(.secondary))
+                                .textFieldStyle(.roundedBorder)
+                                .font(.system(size: 11))
+                                .onChange(of: customWiFi) { UserDefaults.standard.customWiFiSearchTerm = $0.isEmpty ? nil : $0 }
+                        }
+                    }
+                    .padding(.top, 6)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            
+
+            Divider()
+
             // Launch at Login
             HStack {
-                Text("Launch at Login")
-                    .font(.system(size: 12))
+                Text(Loc.launchAtLogin)
+//                    .font(.system(size: 12))
                 Spacer()
-                Toggle("", isOn: Binding(
-                    get: { SMAppService.mainApp.status == .enabled },
-                    set: { enabled in
+                Toggle("", isOn: $launchAtLoginEnabled)
+                    .onChange(of: launchAtLoginEnabled) { enabled in
                         try? enabled ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister()
                     }
-                ))
                 .toggleStyle(.switch)
                 .controlSize(.small)
                 .labelsHidden()
@@ -423,7 +490,7 @@ struct SettingsView: View {
                     .font(.system(size: 10))
                     .foregroundStyle(.quaternary)
                 Spacer()
-                Button("Quit") { NSApp.terminate(nil) }
+                Button(Loc.quit) { NSApp.terminate(nil) }
                     .font(.system(size: 11))
                     .buttonStyle(.plain)
             }
@@ -445,9 +512,9 @@ struct SettingsView: View {
 
     private var triggerDescription: String {
         switch triggerPath {
-        case .controlCenter: return "Opens Control Center and clicks the Wi‑Fi section. Works even when the Wi‑Fi icon is hidden."
-        case .menuBarItem:   return "Clicks the menu bar Wi‑Fi icon directly. Requires the icon to be visible (may conflict with menu bar managers)."
-        case .systemSettings: return "Opens the Wi‑Fi page in System Settings. No accessibility permissions needed."
+        case .controlCenter: return Loc.ccDesc
+        case .menuBarItem:   return Loc.menuBarDesc
+        case .systemSettings: return Loc.settingsDesc
         }
     }
 }

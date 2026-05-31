@@ -17,8 +17,8 @@ enum EthernetIconStyle: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .classic: return "Classic"
-        case .appleNative: return "Apple"
+        case .classic: return Loc.classicIcon
+        case .appleNative: return Loc.appleIcon
         }
     }
 }
@@ -30,9 +30,9 @@ enum WiFiTriggerPath: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .controlCenter: return "Control Center"
-        case .menuBarItem: return "Menu Bar"
-        case .systemSettings: return "Settings"
+        case .controlCenter: return Loc.controlCenterTrigger
+        case .menuBarItem: return Loc.menuBarTrigger
+        case .systemSettings: return Loc.settingsTrigger
         }
     }
 }
@@ -43,8 +43,8 @@ enum ClickAction: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .leftOpensWiFi: return "Left-click"
-        case .rightOpensWiFi: return "Right-click"
+        case .leftOpensWiFi: return Loc.leftClick
+        case .rightOpensWiFi: return Loc.rightClick
         }
     }
 }
@@ -249,6 +249,18 @@ extension UserDefaults {
     private static let wifiTriggerKey = "WiFiTriggerPath"
     private static let ccDelayKey = "CCClickDelay"
     private static let clickActionKey = "ClickAction"
+    private static let languageKey = "AppLanguage"
+    private static let customCCKey = "CustomCCSearchTerm"
+    private static let customWiFiKey = "CustomWiFiSearchTerm"
+
+    var appLanguage: AppLanguage {
+        get {
+            guard let raw = string(forKey: Self.languageKey),
+                  let lang = AppLanguage(rawValue: raw) else { return .english }
+            return lang
+        }
+        set { set(newValue.rawValue, forKey: Self.languageKey) }
+    }
 
     var ethernetIconStyle: EthernetIconStyle {
         get {
@@ -283,5 +295,15 @@ extension UserDefaults {
             return action
         }
         set { set(newValue.rawValue, forKey: Self.clickActionKey) }
+    }
+
+    var customCCSearchTerm: String? {
+        get { string(forKey: Self.customCCKey) }
+        set { set(newValue, forKey: Self.customCCKey) }
+    }
+
+    var customWiFiSearchTerm: String? {
+        get { string(forKey: Self.customWiFiKey) }
+        set { set(newValue, forKey: Self.customWiFiKey) }
     }
 }
