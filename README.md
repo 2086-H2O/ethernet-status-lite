@@ -1,6 +1,14 @@
+<div align="center">
+
 # Ethernet Status Lite
 
+***Latest news, **macOS 27+** now supports native icon switch between Wi-Fi and Ethernet,***
+<br>
+***where Ethernet Status Lite can retire, though it was not long after its birth. XD***
+
 English | [中文](README.zh.md)
+
+</div>
 
 > Ethernet Status Lite is inspired by and restructured from [Ethernet Status](https://github.com/johanohly/ethernet-status) v26.02.18. Huge thanks to [johanohly](https://github.com/johanohly/) for the open source contribution!
 

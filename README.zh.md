@@ -1,6 +1,12 @@
+<div align="center">
+
 # Ethernet Status Lite
 
+***孩子们，macOS 27+ 原生 Wi-Fi 图标支持显示有线网了，升到这个版本后，Ethernet Status Lite 就光荣退休咯***
+
 [English](README.md) | 中文
+
+</div>
 
 > Ethernet Status Lite 是一个启发/重构自 [Ethernet Status](https://github.com/johanohly/ethernet-status) 26.02.18 版本的 macOS 菜单栏 App。非常感谢 [johanohly](https://github.com/johanohly/) 的开源贡献！
 
@@ -53,41 +59,3 @@ Ethernet Status Lite 是一个轻量的 macOS 菜单栏 App，旨在替换原生
 推荐 [Ice](https://github.com/jordanbaird/Ice)、iBar、Bartender 等菜单栏管理工具，以隐藏原生 Wi-Fi 图标，
 
 > Ethernet Status Lite 的开发初衷是：近代 macOS 的原生菜单栏网络图标竟然只能显示无线网状态，在使用有线网时不管不顾，这谁受得了？！因此我们希望能做一个功能类似 Windows 菜单栏网络图标、能够替代原生菜单栏 Wi-Fi 图标的 App。
-
-## 功能
-
-> 相比 Ethernet Status 26.02.18，我们去除了内置的网络面板、流量监控与网络强度显示功能，采用呼出原生 Wi-Fi 面板的方式（以方便无线使用时切换连接）
-
-- 自适应菜单栏图标（以太网（有线网）、Wi-Fi（普通/热点）、连接关闭/异常）
-- 三种呼出原生 Wi-Fi 菜单的方式（推荐：控制中心(1)方式）
-- 多语言与客制化
-
-## 安装
-
-在 [Releases](../../releases/latest) 页面下载 `EthernetStatusLite.dmg`，拖动程序到**应用程序**文件夹。
-
-若出现安全警告，请在终端中移除隔离属性：
-
-```sh
-xattr -d com.apple.quarantine "/Applications/Ethernet Status Lite.app"
-```
-
-App 仅在菜单栏运行（无 Dock 图标）。
-
-## 从源码构建
-
-需要 Xcode 命令行工具。
-
-```sh
-./build.sh
-open ".build/Ethernet Status Lite.app"
-```
-
-## 许可证
-
-GPL-3.0，与 Ethernet Status 一致。
-
-## 致谢
-
-- [johanohly/ethernet-status](https://github.com/johanohly/ethernet-status) — 原项目
-- [Ice](https://github.com/jordanbaird/Ice) — 菜单栏管理工具
