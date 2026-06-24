@@ -24,6 +24,7 @@ if [ -f Resources/AppIcon.icns ]; then
 fi
 
 echo "Signing..."
+xattr -cr "${BUNDLE_DIR}"
 codesign --force --sign - "${BUNDLE_DIR}"
 
 echo "Creating DMG..."
