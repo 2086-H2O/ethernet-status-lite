@@ -49,6 +49,18 @@ enum ClickAction: String, CaseIterable {
     }
 }
 
+enum TriggerBehavior: String, CaseIterable {
+    case alwaysWiFi
+    case ethernetOpensNetwork
+
+    var displayName: String {
+        switch self {
+        case .alwaysWiFi: return Loc.alwaysWiFi
+        case .ethernetOpensNetwork: return Loc.ethernetOpensNetwork
+        }
+    }
+}
+
 enum SecurityType: String, Equatable {
     case open = "Open"
     case wep = "WEP"
@@ -249,6 +261,7 @@ extension UserDefaults {
     private static let wifiTriggerKey = "WiFiTriggerPath"
     private static let ccDelayKey = "CCClickDelay"
     private static let clickActionKey = "ClickAction"
+    private static let triggerBehaviorKey = "TriggerBehavior"
     private static let languageKey = "AppLanguage"
     private static let customCCKey = "CustomCCSearchTerm"
     private static let customWiFiKey = "CustomWiFiSearchTerm"
@@ -295,6 +308,15 @@ extension UserDefaults {
             return action
         }
         set { set(newValue.rawValue, forKey: Self.clickActionKey) }
+    }
+
+    var triggerBehavior: TriggerBehavior {
+        get {
+            guard let raw = string(forKey: Self.triggerBehaviorKey),
+                  let behavior = TriggerBehavior(rawValue: raw) else { return .alwaysWiFi }
+            return behavior
+        }
+        set { set(newValue.rawValue, forKey: Self.triggerBehaviorKey) }
     }
 
     var customCCSearchTerm: String? {

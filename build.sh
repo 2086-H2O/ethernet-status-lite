@@ -16,7 +16,7 @@ rm -rf "${BUNDLE_DIR}"
 mkdir -p "${MACOS_DIR}"
 mkdir -p "${CONTENTS_DIR}/Resources"
 
-cp .build/release/EthernetStatus "${MACOS_DIR}/EthernetStatus"
+cp .build/release/EthernetStatusLite "${MACOS_DIR}/EthernetStatusLite"
 cp Info.plist "${CONTENTS_DIR}/Info.plist"
 cp Resources/*.png "${CONTENTS_DIR}/Resources/"
 if [ -f Resources/AppIcon.icns ]; then

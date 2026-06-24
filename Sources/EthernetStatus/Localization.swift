@@ -114,8 +114,8 @@ struct Loc {
     /// Section label: which mouse button triggers Wi‑Fi
     static var openWiFiWith: String {
         switch lang {
-        case .english: return "Trigger Wi‑Fi Menu with"
-        case .chinese: return "触发 Wi‑Fi 菜单的方式"
+        case .english: return "Open Wi-Fi with"
+        case .chinese: return "打开 Wi‑Fi 的方式"
         }
     }
     /// Radio option: left-click
@@ -130,6 +130,20 @@ struct Loc {
         switch lang {
         case .english: return "Right-click"
         case .chinese: return "右键单击"
+        }
+    }
+    /// Radio option: always open Wi-Fi
+    static var alwaysWiFi: String {
+        switch lang {
+        case .english: return "Always open Wi‑Fi"
+        case .chinese: return "始终打开 Wi‑Fi"
+        }
+    }
+    /// Radio option: open Network settings on Ethernet
+    static var ethernetOpensNetwork: String {
+        switch lang {
+        case .english: return "Open Network Settings on Ethernet"
+        case .chinese: return "接入有线网时，打开网络设置"
         }
     }
 

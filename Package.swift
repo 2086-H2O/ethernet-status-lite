@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "EthernetStatus",
+    name: "EthernetStatusLite",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "EthernetStatus",
+            name: "EthernetStatusLite",
             path: "Sources/EthernetStatus",
             linkerSettings: [
                 .linkedFramework("CoreWLAN"),

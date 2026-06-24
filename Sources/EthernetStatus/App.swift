@@ -198,6 +198,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
             button.action = #selector(statusItemClicked)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.imageScaling = .scaleProportionallyDown
         }
         updateIcon()
         monitor.$state
@@ -272,11 +273,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleWiFiTrigger() {
         let path = UserDefaults.standard.wifiTriggerPath
+        let behavior = UserDefaults.standard.triggerBehavior
+
+        // Open Network settings if on Ethernet and user chose that behavior
+        if behavior == .ethernetOpensNetwork,
+           monitor.state.connectionType == .ethernet {
+            NSWorkspace.shared.open(
+                URL(string: "x-apple.systempreferences:com.apple.Network-Settings.extension")!
+            )
+            return
+        }
 
         switch path {
         case .systemSettings:
             NSWorkspace.shared.open(
-                URL(string: "x-apple.systempreferences:com.apple.preference.network?Wi-Fi")!
+                URL(string: "x-apple.systempreferences:com.apple.wifi")!
             )
 
         case .menuBarItem:
@@ -325,6 +336,7 @@ struct SettingsView: View {
     @AppStorage("EthernetIconStyle") private var iconStyle: EthernetIconStyle = .classic
     @AppStorage("WiFiTriggerPath") private var triggerPath: WiFiTriggerPath = .controlCenter
     @AppStorage("ClickAction") private var clickAction: ClickAction = .leftOpensWiFi
+    @AppStorage("TriggerBehavior") private var triggerBehavior: TriggerBehavior = .alwaysWiFi
     @AppStorage("AppLanguage") private var appLanguage: AppLanguage = .english
     @State private var ccDelay: Double = UserDefaults.standard.ccClickDelay
     @State private var showAdvancedAX: Bool = false
@@ -393,20 +405,29 @@ struct SettingsView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(Loc.openWiFiWith)
-//                    .fontWeight(.bold)
-                Picker("", selection: $clickAction) {
-                    Text(Loc.leftClick).tag(ClickAction.leftOpensWiFi)
-                    Text(Loc.rightClick).tag(ClickAction.rightOpensWiFi)
+            VStack(alignment: .leading) {
+                HStack() {
+                    Text(Loc.openWiFiWith)
+    //                    .fontWeight(.bold)
+                    Spacer()
+                    Picker("", selection: $clickAction) {
+                        Text(Loc.leftClick).tag(ClickAction.leftOpensWiFi)
+                        Text(Loc.rightClick).tag(ClickAction.rightOpensWiFi)
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                }
+//                .padding(.bottom, 4)
+                
+                Picker("", selection: $triggerBehavior) {
+                    Text(Loc.alwaysWiFi).tag(TriggerBehavior.alwaysWiFi)
+                    Text(Loc.ethernetOpensNetwork).tag(TriggerBehavior.ethernetOpensNetwork)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
-                .padding(.top, 8)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-
 
             Divider()
 
@@ -432,7 +453,6 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.menu)
                     .labelsHidden()
-                    .frame(width: 130)
                 }
                 
                 
@@ -485,10 +505,19 @@ struct SettingsView: View {
             Divider()
 
             // Quit
-            HStack {
+            HStack(spacing: 4) {
+                Button("GitHub") {
+                    NSWorkspace.shared.open(URL(string: "https://github.com/2086-H2O/ethernet-status-lite")!)
+                }
+                .font(.system(size: 10))
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                Text("·")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
                 Text("Ethernet Status Lite")
                     .font(.system(size: 10))
-                    .foregroundStyle(.quaternary)
+                    .foregroundStyle(.tertiary)
                 Spacer()
                 Button(Loc.quit) { NSApp.terminate(nil) }
                     .font(.system(size: 11))
